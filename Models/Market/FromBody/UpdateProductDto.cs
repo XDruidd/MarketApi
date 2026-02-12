@@ -12,6 +12,7 @@ public class UpdateProductDto
     
     [Range(0, int.MaxValue)]
     public int? QuantityInStock { get; set; }
+    public string ImgPatch { get; set; }
     
     public bool? IsActive { get; set; } = true;
 }

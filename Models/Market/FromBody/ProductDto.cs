@@ -6,6 +6,8 @@ public class ProductDto
     public string Name { get; set; }
     public float Price { get; set; }
     public int QuantityInStock { get; set; }
+    
+    public string ImgPatch { get; set; }
 }
 
 public class AdminProductDto : ProductDto

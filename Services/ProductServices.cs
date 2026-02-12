@@ -14,7 +14,7 @@ public class ProductServices : IProductServices
     {
         _dbContext = dbContext;
     }
-
+    
     public async Task<List<ProductDto>> GetProducts(int pageNumber = 1, int pageSize = 10)
     {
         var products = await _dbContext.Products
@@ -25,6 +25,7 @@ public class ProductServices : IProductServices
                 Name = product.Name,
                 Price = product.Price,
                 QuantityInStock = product.QuantityInStock,
+                ImgPatch = product.ImgPath
             })
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -44,13 +45,39 @@ public class ProductServices : IProductServices
         return totalPages;
     }
 
+    private async Task<string> UploudImg(ProductFromBody product)
+    {
+        var uploadsFolder = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "Uploads"
+        );
+        
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+        
+        var fileName = Guid.NewGuid() + 
+                       Path.GetExtension(product.Image.FileName);
+        var filePath = Path.Combine(uploadsFolder, fileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        { 
+            await product.Image.CopyToAsync(stream);
+        }
+        
+        var imageUrl = "/Product/image/" + fileName;
+        return imageUrl;
+    }
     public async Task<UpdateProductDto2> PostProduct(ProductFromBody product)
     {
+
+
+        var imageUrl = await UploudImg(product);
+        
         var newProduct = await _dbContext.Products.AddAsync(new Product {
             Name = product.Name,
             Price = product.Price,
             QuantityInStock = product.QuantityInStock,
-            IsActive = product.IsActive
+            IsActive = product.IsActive,
+            ImgPath = imageUrl
         });
         await _dbContext.SaveChangesAsync();
         
@@ -59,6 +86,7 @@ public class ProductServices : IProductServices
             Id = newProduct.Entity.Id,
             Name = newProduct.Entity.Name,
             Price = newProduct.Entity.Price,
+            ImgPatch = newProduct.Entity.ImgPath,
             QuantityInStock = newProduct.Entity.QuantityInStock,
             IsActive = newProduct.Entity.IsActive
         };

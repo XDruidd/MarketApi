@@ -18,6 +18,9 @@ public class Product
     [Required]
     [Range(0, int.MaxValue)]
     public int QuantityInStock { get; set; }
+
+    [Required] 
+    public string ImgPath { get; set; }    
     
     [Required]
     public bool IsActive { get; set; } = true;

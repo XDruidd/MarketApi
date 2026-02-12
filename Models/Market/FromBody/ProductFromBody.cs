@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Market.Models.Market.FromBody;
 
@@ -18,4 +19,6 @@ public class ProductFromBody
     
     [Required]
     public bool IsActive { get; set; } = true;
+    
+    public IFormFile? Image { get; set; } 
 }

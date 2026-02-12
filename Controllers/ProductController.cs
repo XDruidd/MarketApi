@@ -18,6 +18,27 @@ public class ProductController : ControllerBase
         _logger = logger;
         _productServices = productServices;
     }
+    
+    [HttpGet("image/{fileName}")]
+    public IActionResult GetImage(string fileName)
+    {
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", fileName);
+        if (!System.IO.File.Exists(path))
+        {
+            return NotFound();
+        }
+
+        var mime = Path.GetExtension(fileName).ToLower() switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            _ => "application/octet-stream"
+        };
+
+        var fileBytes = System.IO.File.ReadAllBytes(path);
+        return File(fileBytes, mime);
+    }
+
 
     [HttpGet("page/count")]
     public async Task<IActionResult> GetPage()
@@ -39,11 +60,24 @@ public class ProductController : ControllerBase
     
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Post([FromBody] ProductFromBody product)
+    public async Task<IActionResult> Post([FromForm] ProductFromBody product)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
+        }
+
+        if (product.Image == null || product.Image.Length == 0)
+        {
+            return BadRequest();
+        }
+        var allowedTypes = new[] { "image/jpeg", "image/png"};
+        if (!allowedTypes.Contains(product.Image.ContentType))
+            return BadRequest("Not a valid image type");
+
+        if (product.Image.Length > 5 * 1024 * 1024)
+        {
+            return BadRequest("Too long image size");
         }
         
         var created = await _productServices.PostProduct(product);
