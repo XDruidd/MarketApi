@@ -42,15 +42,15 @@ public class OrderProductServices : IOrderProductServices
         var orderPId = await _dbContext.OrderProducts.FirstOrDefaultAsync(op => op.ProductId == orderProduct.ProductId && op.OrderId == order.Id);
         if (orderPId != null)
         {
-            if ((orderPId.Count + orderProduct.Count) > product.QuantityInStock)
+            /*if ((orderPId.Count + orderProduct.Count) > product.QuantityInStock)
             {
                 return new StatusResult(ReturnStatusCode.Conflict, "Not enough stock");
             }
 
             orderPId.Count += orderProduct.Count;
             order.TotalPrice += orderProduct.Count * product.Price;
-            await _dbContext.SaveChangesAsync();
-            return new StatusResult(ReturnStatusCode.Success, "Order success");
+            await _dbContext.SaveChangesAsync();*/
+            return new StatusResult(ReturnStatusCode.Conflict, "Product already add");
         }
 
         if (product.QuantityInStock < orderProduct.Count)
@@ -71,86 +71,93 @@ public class OrderProductServices : IOrderProductServices
         return new StatusResult(ReturnStatusCode.Success, "Order success");
     }
 
-    public async Task<StatusResult> PatchOrderResult(OrderProductDto orderProduct, string userId, bool isPlus)
+    public async Task<StatusResultParametrs<ProductDtoUser>> PatchOrderResult(OrderProductDto orderProduct, string userId)
     {
         var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.UserId == userId);
         if (order == null)
         {
-            return new StatusResult(ReturnStatusCode.BadRequest,"No order found");
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.BadRequest,"No order found", null);
         }
-        return await PatchOrder(orderProduct, order, isPlus);
+        return await PatchOrder(orderProduct, order);
     }
 
-    public async Task<StatusResult> PatchOrderAdmin(OrderProductDto orderProduct, int id, bool isPlus)
+    public async Task<StatusResultParametrs<ProductDtoUser>> PatchOrderAdmin(OrderProductDto orderProduct, int id)
     {
         var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == id);
         if (order == null)
         {
-            return new StatusResult(ReturnStatusCode.BadRequest,"No order found");
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.BadRequest,"No order found", null);
         }
-        return await PatchOrder(orderProduct, order, isPlus);
+        return await PatchOrder(orderProduct, order);
     }
 
     
-    private async Task<StatusResult> PatchOrder(OrderProductDto orderProductDto, Order order, bool isPlus)
+    private async Task<StatusResultParametrs<ProductDtoUser>> PatchOrder(OrderProductDto orderProductDto, Order order)
     {
         var product = await _dbContext.Products.FindAsync(orderProductDto.ProductId);
 
         if (product == null)
         {
-            return new StatusResult(ReturnStatusCode.BadRequest,"No product found");
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.BadRequest,"No product found", null);
         }
 
         if (order.Status)
         {
-            return new StatusResult(ReturnStatusCode.Conflict, "Order already completed");
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.Conflict, "Order already completed", null);
         }
 
         if (product.IsDeleted)
         {
-            return new StatusResult(ReturnStatusCode.Deleted,"Product deleted");
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.Deleted,"Product deleted", null);
         }
 
         if (!product.IsActive)
         {
-            return new StatusResult(ReturnStatusCode.Conflict, "Product not active");
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.Conflict, "Product not active", null);
         }
 
         var orderProduct = await _dbContext.OrderProducts.FirstOrDefaultAsync(op => op.ProductId == orderProductDto.ProductId && op.OrderId == order.Id);
         if (orderProduct == null)
         {
-            return new StatusResult(ReturnStatusCode.BadRequest,"No order found");
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.BadRequest,"No order found", null);
         }
 
-        //додавання
-        if (isPlus)
-        {
-            if ((orderProduct.Count + orderProductDto.Count) > product.QuantityInStock)
-            {
-                return new StatusResult(ReturnStatusCode.Conflict, "Not enough stock");
-            }
+        int newCount = orderProductDto.Count;
 
-            orderProduct.Count += orderProductDto.Count;
-            order.TotalPrice += orderProductDto.Count * product.Price;
-            await _dbContext.SaveChangesAsync();
-            return new StatusResult(ReturnStatusCode.Success ,"Order successful");
-        }
-        
-        if (orderProduct.Count - orderProductDto.Count <= 0)
+        if (newCount <= 0)
         {
-            //якщо воно уходе в 0 чи в -... то воно удаляється
-            _dbContext.OrderProducts.Remove(orderProduct);
-            order.TotalPrice -= orderProduct.Count * product.Price;
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.BadRequest, "Not Valid Parameters", null);
         }
-        else
+
+        if (newCount > product.QuantityInStock)
         {
-            //якщо ні то остається і воно в корзині
-            orderProduct.Count -= orderProductDto.Count;
-            order.TotalPrice -= orderProductDto.Count * product.Price;
+            return new StatusResultParametrs<ProductDtoUser>(ReturnStatusCode.Conflict, "Not enough stock", null);
         }
+
+        orderProduct.Count = newCount;
         
         await _dbContext.SaveChangesAsync();
-        return new StatusResult(ReturnStatusCode.Success ,"Order successful");
+
+        // Пересчёт всей суммы
+        order.TotalPrice = await _dbContext.OrderProducts
+            .Where(op => op.OrderId == order.Id)
+            .SumAsync(op => op.Count * op.Product.Price);
+
+
+        await _dbContext.SaveChangesAsync();
+        return new StatusResultParametrs<ProductDtoUser>(
+            ReturnStatusCode.Success,
+            "Success",
+            new ProductDtoUser
+            {
+                Id = orderProduct.Product.Id,
+                Count = orderProduct.Count,
+                Price = orderProduct.Price,
+                ImgPatch = orderProduct.Product.ImgPath,
+                Name = orderProduct.Product.Name,
+                TotalPrice = order.TotalPrice
+            }
+        );
     }
 
     public async Task<OrderProductYouDto?> GetAllProduct(string userId)

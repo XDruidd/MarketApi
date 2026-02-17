@@ -8,7 +8,7 @@ public class UpdateProductDto
     public string? Name { get; set; }
     
     [Range(0.1, int.MaxValue)]
-    public float? Price { get; set; }
+    public decimal? Price { get; set; }
     
     [Range(0, int.MaxValue)]
     public int? QuantityInStock { get; set; }

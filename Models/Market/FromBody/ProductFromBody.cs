@@ -11,7 +11,7 @@ public class ProductFromBody
     
     [Required]
     [Range(0.1, int.MaxValue)]
-    public float Price { get; set; }
+    public decimal Price { get; set; }
     
     [Required]
     [Range(0, int.MaxValue)]

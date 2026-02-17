@@ -8,7 +8,7 @@ public interface IOrderProductServices
 {
     Task<StatusResult> PostOrder(OrderProductDto orderProduct, string userId);
     Task<OrderProductYouDto?> GetAllProduct(string userId);
-    Task<StatusResult> PatchOrderResult(OrderProductDto orderProduct, string userId, bool isPlus);
-    Task<StatusResult> PatchOrderAdmin(OrderProductDto orderProduct, int id, bool isPlus);
+    Task<StatusResultParametrs<ProductDtoUser>> PatchOrderResult(OrderProductDto orderProduct, string userId);
+    Task<StatusResultParametrs<ProductDtoUser>> PatchOrderAdmin(OrderProductDto orderProduct, int id);
 
 }

@@ -10,3 +10,6 @@ public enum ReturnStatusCode
 }
 
 public record StatusResult(ReturnStatusCode Code, string Message);
+public record StatusResultParametrs<T>(ReturnStatusCode Code, string Message, T Data);
+
+

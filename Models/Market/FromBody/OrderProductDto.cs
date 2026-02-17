@@ -5,6 +5,7 @@ namespace Market.Models.Market.FromBody;
 public class OrderProductDto
 {
     public int ProductId { get; set; }
+    [Range(1, int.MaxValue)]
     public int Count { get; set; }
 }
 public class OrderProductListOnListDto
@@ -18,13 +19,13 @@ public class OrderProductListOnListDto
 public class OrderProductListDto
 {
     public OrderProductListOnListDto Product { get; set; }
-    public float Price { get; set; }
+    public decimal Price { get; set; }
     public int Count { get; set; }
 }
 
 public class OrderProductYouDto
 {
-    public float TotalPrice {get; set;}
+    public decimal TotalPrice {get; set;}
     
     public List<OrderProductListDto> OredersProducts { get; set; }  
 }
@@ -36,7 +37,7 @@ public class OrderProductListDto1 : OrderProductListDto
 
 public class OrderProductListDtoPeople(){
     public int Id { get; set; }
-    public float TotalPrice { get; set; }
+    public decimal TotalPrice { get; set; }
     public bool Status { get; set; }
     
     public List<AdminProductDto> OrderProducts { get; set; }

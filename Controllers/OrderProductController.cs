@@ -56,10 +56,10 @@ public class OrderProductController : ControllerBase
             }
         }
     }
-
+    
     [Authorize(Roles = "Customer,Admin")]
     [HttpPatch]
-    public async Task<IActionResult> PatchOrder([FromBody] OrderProductDto orderProduct, bool isPlus)
+    public async Task<IActionResult> PatchOrder([FromBody] OrderProductDto orderProduct)
     {
         if (!ModelState.IsValid)
         {
@@ -72,7 +72,7 @@ public class OrderProductController : ControllerBase
         {
             return BadRequest();
         }
-        var status = await _orderProductServices.PatchOrderResult(orderProduct, userId, isPlus);
+        var status = await _orderProductServices.PatchOrderResult(orderProduct, userId);
 
         switch (status.Code)
         {
@@ -90,7 +90,7 @@ public class OrderProductController : ControllerBase
             }
             default:
             {
-                return Ok(new { Message = status });
+                return Ok(new { Product = status.Data});
             }
         }
     }
@@ -111,11 +111,11 @@ public class OrderProductController : ControllerBase
     }
     [Authorize(Roles = "Admin")]
     [HttpPatch("Admin/{id}")]
-    public async Task<IActionResult> PatchAdminOrder([FromBody] OrderProductDto orderProduct, bool isPlus, int id)
+    public async Task<IActionResult> PatchAdminOrder([FromBody] OrderProductDto orderProduct, int id)
     {
         
-        var status = await _orderProductServices.PatchOrderAdmin(orderProduct, id, isPlus);
-
+        var status = await _orderProductServices.PatchOrderAdmin(orderProduct, id);
+        Console.WriteLine("=============================================" + status.Message + status.Data);
         switch (status.Code)
         {
             case ReturnStatusCode.BadRequest:
@@ -132,8 +132,9 @@ public class OrderProductController : ControllerBase
             }
             default:
             {
-                return Ok(new { Message = status });
+                return Ok(new { Product = status.Data});
             }
         }
+        
     }
 }

@@ -31,7 +31,7 @@ public class OrderController : Controller
         var count = await _orderServices.GetCoutProduct(userId);
         if (count == 0)
         {
-            return NotFound();
+            return NoContent();
         }
         else
         {

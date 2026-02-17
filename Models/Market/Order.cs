@@ -9,7 +9,7 @@ public class Order
     
     public string UserId { get; set; }
 
-    public float TotalPrice { get; set; } = 0;
+    public decimal TotalPrice { get; set; } = 0;
     
     public bool Status { get; set; } = false;
     
