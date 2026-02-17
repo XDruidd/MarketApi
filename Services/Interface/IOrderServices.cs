@@ -10,4 +10,5 @@ public interface IOrderServices
     Task<int> GetOrdersCountPage(int pageSize = 10);
     Task<OrderProductListDtoPeople> GetOneOrders(int id);
     Task<StatusResult> PathStatus(int id, bool isActive);
+    Task<int> GetCoutProduct(string userId);
 }

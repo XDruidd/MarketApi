@@ -54,8 +54,10 @@ public class AuthController : ControllerBase
                 if (identityResult.Succeeded)
                 {
                     await _orderServices.CreateAсcaunt(identityUser.Id);
-                    return Ok(new { Message = "User registered successfully! try loggging in" });
-
+                    
+                    var roles = await _userManager.GetRolesAsync(identityUser);
+                    var token = _tokenService.CreateJWTTokenAsync(identityUser, roles);
+                    return Ok(new { Message = "Register successful", Token = token });
                 }
 
                 return BadRequest(new

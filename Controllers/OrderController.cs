@@ -1,11 +1,13 @@
+using System.Security.Claims;
 using Market.Models;
+using Market.Models.Market;
 using Market.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Market.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,Customer")]
 [Route("api/[controller]")]
 [ApiController]
 public class OrderController : Controller
@@ -17,6 +19,24 @@ public class OrderController : Controller
     {
         _logger = logger;
         _orderServices = orderServices;
+    }
+
+    [Authorize(Roles = "Customer,Admin")]
+    [HttpGet("count")]
+    public async Task<IActionResult> GetOrderCount()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        if (userId == null) { return Unauthorized(); }
+        var count = await _orderServices.GetCoutProduct(userId);
+        if (count == 0)
+        {
+            return NotFound();
+        }
+        else
+        {
+            return Ok(new {Count = count});
+        }
     }
     
     [Authorize(Roles = "Admin")]

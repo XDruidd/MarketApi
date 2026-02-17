@@ -2,6 +2,7 @@ using Market.Models;
 using Market.Models.Market;
 using Market.Models.Market.FromBody;
 using Market.Services.Interface;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Market.Services;
@@ -130,5 +131,16 @@ public class OrderServices : IOrderServices
         await _dbContext.SaveChangesAsync();
 
         return new StatusResult(ReturnStatusCode.Success,"Order status updated");
+    }
+
+    public async Task<int> GetCoutProduct(string userId)
+    {
+        int count = 0;
+        var order = await _dbContext.Orders.Include(order => order.OrderProducts).FirstOrDefaultAsync(o => o.UserId == userId);
+        if (order == null) { return count; }
+        
+        count = order.OrderProducts.Sum(op => op.Count);
+        return count;
+        
     }
 }
