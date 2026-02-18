@@ -103,7 +103,7 @@ public class OrderProductController : ControllerBase
         
         var arr = await _orderProductServices.GetAllProduct(userId);
 
-        if (arr == null)
+        if (arr.TotalPrice == 0)
         {
             return NoContent();
         }
@@ -115,7 +115,6 @@ public class OrderProductController : ControllerBase
     {
         
         var status = await _orderProductServices.PatchOrderAdmin(orderProduct, id);
-        Console.WriteLine("=============================================" + status.Message + status.Data);
         switch (status.Code)
         {
             case ReturnStatusCode.BadRequest:
@@ -136,5 +135,44 @@ public class OrderProductController : ControllerBase
             }
         }
         
+    }
+
+    [Authorize(Roles = "Admin,Customer")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteOrderProduct([FromRoute] int id)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId == null)
+        {
+            return BadRequest();
+        }
+        
+        var status = await _orderProductServices.DeleteProduct(userId, id);
+        switch (status.Code)
+        {
+            case ReturnStatusCode.BadRequest:
+            {
+                return BadRequest(new { Error = status.Message });
+            }
+            case ReturnStatusCode.Conflict:
+            {
+                return Conflict(new { Error = status.Message });
+            }
+            case ReturnStatusCode.NotFound:
+            {
+                return NotFound(new { Error = status.Message });
+            }
+            case ReturnStatusCode.Success:
+            {
+                return Ok(new { TotalPrice = status.Data });
+            }
+        }
+        return BadRequest(new { Error = status.Message });
     }
 }

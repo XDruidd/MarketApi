@@ -10,5 +10,5 @@ public interface IOrderProductServices
     Task<OrderProductYouDto?> GetAllProduct(string userId);
     Task<StatusResultParametrs<ProductDtoUser>> PatchOrderResult(OrderProductDto orderProduct, string userId);
     Task<StatusResultParametrs<ProductDtoUser>> PatchOrderAdmin(OrderProductDto orderProduct, int id);
-
+    Task<StatusResultParametrs<decimal?>> DeleteProduct(string userId, int productId);
 }

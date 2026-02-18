@@ -12,6 +12,7 @@ public class OrderProductListOnListDto
 {
     public int ProductId { get; set; }
     public string ProductName { get; set; }
+    public string ImgPath { get; set; }
     public int ProductQuantityInStock { get; set; }
 }
 

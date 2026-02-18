@@ -176,6 +176,7 @@ public class OrderProductServices : IOrderProductServices
                 {
                     ProductId = op.Product.Id,
                     ProductName = op.Product.Name,
+                    ImgPath = op.Product.ImgPath,
                     ProductQuantityInStock = op.Product.QuantityInStock,
                 },
                 Price = op.Price,
@@ -191,5 +192,37 @@ public class OrderProductServices : IOrderProductServices
         };
 
         return orderProductYou;
+    }
+
+    public async Task<StatusResultParametrs<decimal?>> DeleteProduct(string userId, int productId)
+    {
+        var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.UserId == userId);
+        if (order == null)
+        {
+            return new StatusResultParametrs<decimal?>(ReturnStatusCode.NotFound, "No order found", null);
+        }
+
+        if (order.Status)
+        {
+            return new StatusResultParametrs<decimal?>(ReturnStatusCode.Conflict, "Order already completed", null);
+        }
+
+        var productDelete = await _dbContext.OrderProducts.FirstOrDefaultAsync(op => op.ProductId == productId && op.OrderId == order.Id);
+        if (productDelete == null)
+        {
+            return new StatusResultParametrs<decimal?>(ReturnStatusCode.BadRequest, "No product found", null);
+        }
+        
+        _dbContext.OrderProducts.Remove(productDelete);
+        await _dbContext.SaveChangesAsync();
+        
+        order.TotalPrice = await _dbContext.OrderProducts
+            .Where(op => op.OrderId == order.Id)
+            .SumAsync(op => op.Count * op.Product.Price);
+        await _dbContext.SaveChangesAsync();
+        
+        return new StatusResultParametrs<decimal?>(ReturnStatusCode.Success, "Success", order.TotalPrice);
+
+        
     }
 }
