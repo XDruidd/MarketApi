@@ -92,7 +92,16 @@ public class AuthController : ControllerBase
                     {
 
                         var token = _tokenService.CreateJWTTokenAsync(identityUser, roles);
-                        return Ok(new { Message = "Login successful", Token = token });
+                        if (roles.Contains("Admin"))
+                        {
+                            return Ok(new 
+                            { 
+                                Message = "Login successful", 
+                                Token = token, 
+                                Role = "Admin" 
+                            });
+                        }
+                        return Ok(new { Message = "Login successful", Token = token});
                     }
 
                     return Unauthorized(new { Message = "User has no roles assigned contact admin" });
