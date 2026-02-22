@@ -45,7 +45,7 @@ public class ProductServices : IProductServices
         return totalPages;
     }
 
-    private async Task<string> UploudImg(ProductFromBody product)
+    private async Task<string> UploudImg(ProductFromBodyDto product)
     {
         var uploadsFolder = Path.Combine(
             Directory.GetCurrentDirectory(),
@@ -66,7 +66,7 @@ public class ProductServices : IProductServices
         var imageUrl = "/Product/image/" + fileName;
         return imageUrl;
     }
-    public async Task<UpdateProductDto2> PostProduct(ProductFromBody product)
+    public async Task<UpdateProductDto2> PostProduct(ProductFromBodyDto product)
     {
 
 

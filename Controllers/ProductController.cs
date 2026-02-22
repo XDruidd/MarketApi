@@ -60,7 +60,7 @@ public class ProductController : ControllerBase
     
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Post([FromForm] ProductFromBody product)
+    public async Task<IActionResult> Post([FromForm] ProductFromBodyDto product)
     {
         if (!ModelState.IsValid)
         {

@@ -10,7 +10,7 @@ public interface IProductServices
 
     Task<int> GetProductsCountPage(int pageSize = 10);
     
-    Task<UpdateProductDto2> PostProduct(ProductFromBody product);
+    Task<UpdateProductDto2> PostProduct(ProductFromBodyDto product);
     
     Task<bool> DeleteProduct(int productId);
     Task<bool> PathProduct(int productId, UpdateProductDto update);

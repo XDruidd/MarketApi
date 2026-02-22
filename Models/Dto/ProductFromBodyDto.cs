@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Market.Models.Market.FromBody;
 
-public class ProductFromBody
+public class ProductFromBodyDto
 {
     [Required]
     [MinLength(3)]
